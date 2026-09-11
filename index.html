@@ -1101,14 +1101,26 @@ const DUTY = [
   { key: 'off',   name: '비번', short: '비', bg: 'var(--duty-off-bg)',   fg: 'var(--duty-off)'   },
   { key: 'rest',  name: '휴무', short: '휴', bg: 'var(--duty-rest-bg)',  fg: 'var(--duty-rest)'  },
 ];
-function dutyForDay(d) { return DUTY[(d - 1) % 4]; }
+// Continuous 4-shift rotation anchored at 2026-09-01 = 주간
+// Never resets at month boundaries.
+const DUTY_ANCHOR = new Date(2026, 8, 1); // Sep 1, 2026 (month is 0-indexed)
+function dutyForDate(y, m, d) {
+  const target = new Date(y, m, d);
+  const days = Math.round((target - DUTY_ANCHOR) / 86400000);
+  return DUTY[((days % 4) + 4) % 4];
+}
+// Kept for compat — uses today's month/year
+function dutyForDay(d) {
+  const now = new Date();
+  return dutyForDate(now.getFullYear(), now.getMonth(), d);
+}
 
 /* Today's duty status message */
 (() => {
   const el = document.getElementById('todayDuty');
   if (!el) return;
   const t = new Date();
-  const duty = dutyForDay(t.getDate());
+  const duty = dutyForDate(t.getFullYear(), t.getMonth(), t.getDate());
   const nameEl = el.querySelector('.duty-name');
   const tagEl = el.querySelector('.date-tag');
   let label = duty.name + '근무';
@@ -1611,7 +1623,7 @@ try {
       cell.setAttribute('aria-label', `${cy}년 ${cm + 1}월 ${cd}일 ${DOW_KO[dow]}`);
       const top = document.createElement('div'); top.className = 'cell-top';
       const num = document.createElement('span'); num.className = 'daynum'; num.textContent = cd;
-      const duty = dutyForDay(cd);
+      const duty = dutyForDate(cy, cm, cd);
       const dutyEl = document.createElement('span');
       dutyEl.className = 'duty';
       dutyEl.textContent = duty.short;
@@ -1663,7 +1675,7 @@ try {
     const sub = document.getElementById('sheetSub');
     sub.textContent = `${y}년 · ${DOW_KO[dow]}`;
     if (dow === 0) sub.style.color = 'var(--sun)'; else if (dow === 6) sub.style.color = 'var(--sat)'; else sub.style.color = '';
-    const duty = dutyForDay(d);
+    const duty = dutyForDate(y, m, d);
     const dutyEl = document.getElementById('sheetDuty');
     dutyEl.textContent = duty.name;
     dutyEl.style.setProperty('--dbg', duty.bg);
