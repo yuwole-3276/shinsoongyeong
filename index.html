@@ -1208,6 +1208,49 @@
     pointer-events: none;
   }
   .ms-choice.picked::before { background: #C42E5A; color: #FFF; }
+  .ms-free-answer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ms-free-input {
+    width: 100%;
+    min-height: 112px;
+    resize: vertical;
+    padding: 15px 16px;
+    border: 1px solid rgba(196,46,90,.22);
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: #2A1E22;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.55;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .ms-free-input:focus {
+    border-color: #E13A55;
+    box-shadow: 0 0 0 3px rgba(225,58,85,.12);
+  }
+  .ms-free-input::placeholder { color: #B88B93; font-weight: 500; }
+  .ms-free-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ms-free-count { font-size: 11px; color: #A36D77; font-variant-numeric: tabular-nums; }
+  .ms-free-submit {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 18px;
+    background: linear-gradient(135deg, #C42E5A, #E13A55);
+    color: #FFF;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 5px 14px rgba(196,46,90,.24);
+  }
+  .ms-free-submit:disabled { opacity: .48; cursor: not-allowed; box-shadow: none; }
+  .ms-free-error { min-height: 1.3em; color: #C42E5A; font-size: 11px; font-weight: 700; }
 
   /* Ending screen */
   .ms-ending {
@@ -1265,6 +1308,9 @@
   :root[data-theme="dark"] .ms-choice { background: rgba(255,255,255,.08); color: #FFE0E5; box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,180,180,.15); }
   :root[data-theme="dark"] .ms-choice::before { background: rgba(255,120,140,.2); color: #FFB8BE; }
   :root[data-theme="dark"] .ms-choice:hover { background: rgba(255,255,255,.12); }
+  :root[data-theme="dark"] .ms-free-input { background: rgba(255,255,255,.08); color: #FFE0E5; border-color: rgba(255,180,190,.22); }
+  :root[data-theme="dark"] .ms-free-input::placeholder { color: #C89099; }
+  :root[data-theme="dark"] .ms-free-count { color: #C89099; }
   :root[data-theme="dark"] .ms-end-title { color: #FFB8BE; text-shadow: 2px 2px 0 rgba(0,0,0,.3); }
   :root[data-theme="dark"] .ms-end-line { background: rgba(255,255,255,.08); color: #FFE0E5; }
   :root[data-theme="dark"] .ms-end-score { color: #E0B8BE; }
@@ -1988,7 +2034,7 @@
         </div>
         <div class="ms-cover-text">
           <div class="ms-cover-tag">💌 MINYEONSI · EPISODE SELECT</div>
-          <div class="ms-cover-title">연애에도<br>난이도가 있다</div>
+          <div class="ms-cover-title">민연시 :<br>연습을 실전같이 하라</div>
           <div class="ms-cover-desc">
             첫 소개팅부터 담배 현장 적발까지.<br>
             상황을 선택하고 이가명의 마음을 지켜내세요.<br>
@@ -2033,7 +2079,7 @@
           <div class="ms-line" id="msLine">—</div>
         </div>
       </div>
-      <div class="ms-choices-label">💬 민규의 대답 <span class="ms-hint">(신중하게 선택하세요 · 순서는 매번 달라집니다)</span></div>
+      <div class="ms-choices-label"><span id="msAnswerLabel">💬 민규의 대답</span> <span class="ms-hint" id="msAnswerHint">(신중하게 선택하세요 · 순서는 매번 달라집니다)</span></div>
       <div class="ms-choices" id="msChoices"></div>
     </div>
 
@@ -3008,7 +3054,8 @@ try {
       title: '담배 피우다 걸린 민규',
       stars: '★ × 99',
       difficulty: 'NIGHTMARE',
-      description: '거짓말 한 번이면 치명상. 변명 없이 인정하고 구체적인 행동으로 신뢰를 다시 증명해야 합니다.',
+      description: '선택지 없는 주관식 최종전. 변명 없이 인정하고 구체적인 행동으로 신뢰를 다시 증명해야 합니다.',
+      freeResponse: true,
       sceneCount: 8,
       trueScore: 16,
       clearScore: 15,
@@ -3016,6 +3063,10 @@ try {
       scenes: [
         {
           question: '오빠, 지금 손에 든 거 담배 맞지?',
+          rubric: {
+            groups: [['맞아', '맞습니다', '담배'], ['숨기', '감추', '거짓말'], ['미안', '잘못', '사과']],
+            avoid: ['담배 아니', '아니야', '아닌데', '동료가', '친구가', '잠깐 들', '한 개비', '별거', '예민'],
+          },
           choices: [
             { text: '맞아. 숨기려 했던 것도 사실이야. 먼저 솔직하게 말하지 못해서 미안해.', delta: 2 },
             { text: '맞아. 설명할 기회를 한 번만 줬으면 좋겠어.', delta: 1 },
@@ -3025,6 +3076,10 @@ try {
         },
         {
           question: '나한테 담배 안 피운다고 했잖아. 언제부터 다시 피운 거야?',
+          rubric: {
+            groups: [['두 달', '한 달', '몇 주', '며칠', '최근', '어제', '지난', '부터', '다시'], ['숨', '말 못', '말하지', '거짓'], ['미안', '잘못', '실망']],
+            avoid: ['기억 안', '기억이 안', '모르겠', '가끔', '몇 번뿐', '스트레스 때문', '어쩔 수'],
+          },
           choices: [
             { text: '두 달 전 야간근무 때 다시 시작했어. 말하면 실망할까 봐 숨겼어. 그 선택이 잘못이야.', delta: 2 },
             { text: '최근에 스트레스가 심해서 몇 번 피웠어. 숨긴 건 미안해.', delta: 1 },
@@ -3034,8 +3089,12 @@ try {
         },
         {
           question: '내가 냄새 난다고 물었을 때도 아니라고 했지?',
+          rubric: {
+            groups: [['거짓말', '부정', '속였'], ['미안', '잘못', '사과'], ['화', '상처', '신뢰']],
+            avoid: ['옆 사람이', '밴 냄새', '선의', '싸우기 싫', '어쩔 수'],
+          },
           choices: [
-            { text: '응. 그때도 거짓말했어. 담배보다 거짓말 때문에 더 화난 거 알아.', delta: 2 },
+            { text: '응. 그때도 거짓말했어. 담배보다 거짓말 때문에 더 화난 거 알아. 미안해.', delta: 2 },
             { text: '응, 들킬까 봐 부정했어. 정말 미안해.', delta: 1 },
             { text: '그때는 옆 사람이 피워서 밴 냄새도 있었어.', delta: -2 },
             { text: '싸우기 싫어서 선의로 말하지 않은 거야.', delta: -3 },
@@ -3043,6 +3102,10 @@ try {
         },
         {
           question: '건강 걱정하는 내가 우스웠어? 왜 나한테 말도 안 했어?',
+          rubric: {
+            groups: [['걱정', '건강', '마음'], ['숨', '말하지', '회피'], ['미안', '잘못', '변명']],
+            avoid: ['내 건강', '내가 결정', '못 피우게', '간섭', '상관없'],
+          },
           choices: [
             { text: '우습지 않았어. 오히려 네 걱정을 알면서 숨겨서 더 미안해. 변명하지 않을게.', delta: 2 },
             { text: '걱정할 걸 알아서 말을 못 했어. 결과적으로 더 크게 상처 줬네.', delta: 1 },
@@ -3052,6 +3115,10 @@ try {
         },
         {
           question: '그럼 이제 당장 끊을 수 있어? 또 말만 하는 거 아니야?',
+          rubric: {
+            groups: [['끊', '금연'], ['오늘', '당장', '지금'], ['클리닉', '병원', '예약', '상담', '도움', '버리', '패치', '기록']],
+            avoid: ['의지만', '조금씩 줄', '천천히 줄', '나중에', '장담'],
+          },
           choices: [
             { text: '오늘 남은 담배를 버리고 내일 금연클리닉을 예약할게. 진행도 숨기지 않고 공유하겠어.', delta: 2 },
             { text: '혼자 장담하지 않고 도움을 받아서 끊을게.', delta: 1 },
@@ -3061,6 +3128,10 @@ try {
         },
         {
           question: '금연하다 실패하면 또 숨길 거야?',
+          rubric: {
+            groups: [['실패', '다시 피'], ['바로', '즉시', '솔직', '공유', '말할'], ['다시', '계획', '도움', '기록', '재시작']],
+            avoid: ['굳이 말', '알릴 필요', '한 번 정도', '실패 안 해', '그럴 일 없어'],
+          },
           choices: [
             { text: '실패해도 바로 말하고 다시 계획을 세울게. 완벽한 척하면서 숨기지 않겠어.', delta: 2 },
             { text: '이번에는 실패하지 않도록 기록하면서 노력할게.', delta: 1 },
@@ -3070,6 +3141,10 @@ try {
         },
         {
           question: '내가 어떻게 다시 오빠 말을 믿어?',
+          rubric: {
+            groups: [['강요하지', '요구하지', '당장 믿', '믿어달라고 하지'], ['행동', '지키', '증명', '보여'], ['시간', '기다리', '투명', '확인', '공유', '근거']],
+            avoid: ['사과했는데', '못 믿으면', '방법이 없', '한 번의 거짓말', '의심 그만'],
+          },
           choices: [
             { text: '지금 믿어달라고 요구하지 않을게. 약속한 행동을 계속 지켜서 다시 판단할 근거를 만들게.', delta: 2 },
             { text: '시간이 걸려도 행동으로 보여줄게. 확인하고 싶은 건 숨기지 않겠어.', delta: 1 },
@@ -3079,6 +3154,10 @@ try {
         },
         {
           question: '마지막으로 묻는 거야. 나한테 더 숨긴 건 없어?',
+          rubric: {
+            groups: [['없어', '전부', '솔직'], ['숨기지', '답할', '말할', '말한'], ['시간', '기다리', '생각', '존중']],
+            avoid: ['없다니까', '어디까지 의심', '나중에 이야기', '더 화낼', '그만 물어'],
+          },
           choices: [
             { text: '담배와 관련해 숨긴 건 방금 말한 게 전부야. 생각할 시간을 가져도 기다릴게.', delta: 2 },
             { text: '없어. 지금부터 묻는 건 피하지 않고 솔직히 답할게.', delta: 1 },
@@ -3111,6 +3190,8 @@ try {
   const heartsEl = document.getElementById('msHearts');
   const lineEl = document.getElementById('msLine');
   const choicesEl = document.getElementById('msChoices');
+  const answerLabelEl = document.getElementById('msAnswerLabel');
+  const answerHintEl = document.getElementById('msAnswerHint');
   const stageEl = document.getElementById('msStage');
   const bgIconEl = document.getElementById('msBgIcon');
   const endEmoji = document.getElementById('msEndEmoji');
@@ -3202,6 +3283,81 @@ try {
     }
   }
 
+  function evaluateFreeResponse(value, rubric) {
+    const answer = value.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (answer.length < 10) return -2;
+    if (rubric.avoid.some(phrase => answer.includes(phrase))) return -3;
+    const matchedGroups = rubric.groups.filter(group => group.some(term => answer.includes(term))).length;
+    if (matchedGroups >= 3 && answer.length >= 12) return 2;
+    if (matchedGroups >= 2) return 1;
+    if (matchedGroups === 1) return 0;
+    return -2;
+  }
+
+  function renderFreeAnswer(scene) {
+    const form = document.createElement('form');
+    form.className = 'ms-free-answer';
+
+    const input = document.createElement('textarea');
+    input.className = 'ms-free-input';
+    input.maxLength = 220;
+    input.placeholder = '민규라면 뭐라고 답할까? (최소 10자)';
+    input.setAttribute('aria-label', '민규의 주관식 답변');
+
+    const footer = document.createElement('div');
+    footer.className = 'ms-free-footer';
+    const count = document.createElement('span');
+    count.className = 'ms-free-count';
+    count.textContent = '0 / 220';
+    const submit = document.createElement('button');
+    submit.type = 'submit';
+    submit.className = 'ms-free-submit';
+    submit.textContent = '이 답변으로 말하기';
+    submit.disabled = true;
+    footer.append(count, submit);
+
+    const error = document.createElement('div');
+    error.className = 'ms-free-error';
+    error.setAttribute('aria-live', 'polite');
+    form.append(input, footer, error);
+    choicesEl.appendChild(form);
+
+    input.addEventListener('input', () => {
+      const length = input.value.trim().length;
+      count.textContent = `${input.value.length} / 220`;
+      submit.disabled = length < 10;
+      error.textContent = '';
+    });
+    input.addEventListener('keydown', event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !submit.disabled) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const answer = input.value.trim();
+      if (answer.length < 10) {
+        error.textContent = '상황을 피하지 말고 10자 이상으로 답해주세요.';
+        return;
+      }
+      input.disabled = true;
+      submit.disabled = true;
+      submit.textContent = '답변 제출됨';
+      setSpeaker('mingyu');
+      lineEl.textContent = answer;
+      const before = affection;
+      affection = Math.max(0, Math.min(maxScore(), affection + evaluateFreeResponse(answer, scene.rubric)));
+      renderHearts();
+      if (affection > before) bumpHearts();
+      setTimeout(() => {
+        currentScene += 1;
+        loadScene(currentScene);
+      }, 1700);
+    });
+    requestAnimationFrame(() => input.focus());
+  }
+
   function loadScene(idx) {
     const scene = scenes[idx];
     if (!scene) { showEnding(); return; }
@@ -3211,6 +3367,14 @@ try {
     bgIconEl.textContent = selectedEpisode.id === 2 ? '🍷' : selectedEpisode.id === 5 ? '🚨' : '💬';
     stageEl.dataset.episode = String(selectedEpisode.id);
     choicesEl.replaceChildren();
+    if (selectedEpisode.freeResponse) {
+      answerLabelEl.textContent = '✍️ 민규의 직접 답변';
+      answerHintEl.textContent = '(주관식 · 책임감과 구체성을 판정합니다)';
+      renderFreeAnswer(scene);
+      return;
+    }
+    answerLabelEl.textContent = '💬 민규의 대답';
+    answerHintEl.textContent = '(신중하게 선택하세요 · 순서는 매번 달라집니다)';
     shuffled(scene.choices).forEach((choice, i) => {
       const button = document.createElement('button');
       button.className = 'ms-choice';
